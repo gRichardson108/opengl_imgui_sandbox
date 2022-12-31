@@ -19,6 +19,8 @@ set( GLFW_INSTALL OFF CACHE BOOL  "GLFW lib only" )
 add_subdirectory( glfw )
 # glad
 add_subdirectory( glad )
+# glm
+add_subdirectory( glm )
 
 # Dear ImGui
 set(IMGUI_DIR imgui/)
@@ -32,7 +34,7 @@ add_executable(heatmap main.cpp
         ${IMGUI_DIR}/imgui_demo.cpp
         ${IMGUI_DIR}/imgui_tables.cpp
         ${IMGUI_DIR}/imgui_widgets.cpp
-        Shader.cpp Shader.h)
+        Shader.cpp Shader.h Heatmap.cpp Heatmap.h)
 
 add_dependencies(heatmap copy_resources)
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glad)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glad glm)
