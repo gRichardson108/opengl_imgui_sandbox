@@ -12,7 +12,9 @@
 
 #define GL_CHECK      do { GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned \n", __FILE__, __LINE__, gl_err); } while (0)  // Just error check
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath) :
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) :
+        vertexPath(vertexPath),
+        fragmentPath(fragmentPath),
         id(0) {
     using namespace std;
 
@@ -95,13 +97,17 @@ void Shader::checkCompileErrors(unsigned int shader, Shader::ShaderType shaderTy
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "Error: could not compile shader source: " << infoLog << std::endl;
+            std::cerr << "Error: could not compile shader source: " 
+                      << (shaderType == ShaderType::Fragment? fragmentPath : vertexPath) << "\n"
+                      << infoLog << std::endl;
         }
     } else {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "Error: could not link shader program: " << infoLog << std::endl;
+            std::cerr << "Error: could not link shader program: "
+                        << vertexPath << " OR " << fragmentPath << "\n"
+                      << infoLog << std::endl;
         }
     }
 }

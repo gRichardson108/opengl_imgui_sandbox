@@ -7,8 +7,13 @@
 #include <glad/gl.h>
 #include <glm/vec2.hpp>
 
+#ifdef GL_DEBUG
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 #define GL_CHECK      do { GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned \n", __FILE__, __LINE__, gl_err); } while (0)  // Just error check
+#else
+#define GL_CALL(_CALL)      _CALL
+#define GL_CHECK      (void)0
+#endif
 
 struct Color {
     unsigned char r;
@@ -27,7 +32,7 @@ Heatmap::Heatmap(int width, int height) :
         vao(0),
         vbo(0),
         ebo(0),
-        shader("resources/texture.vsh", "resources/texture.fsh") {
+        shader("resources/texture.vsh.glsl", "resources/texture.fsh.glsl") {
     data = malloc(sizeof(Color) * width * height);
     memset(data, 0, sizeof(Color) * width * height);
 
@@ -68,9 +73,9 @@ Heatmap::Heatmap(int width, int height) :
     GL_CALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float))));
     GL_CALL(glEnableVertexAttribArray(2));
 
-    glDisableVertexAttribArray(0);
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//    glDisableVertexAttribArray(0);
+//    glBindVertexArray(0);
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
     GL_CHECK;
 
     // allocate an OpenGL texture

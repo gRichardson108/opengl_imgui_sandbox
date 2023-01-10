@@ -10,13 +10,13 @@
 /// Handles shader compilation in a very basic way, with error messages.
 class Shader {
 public:
-    /// The ID of the shader program after linking. Set to 0 for error.
+/// The ID of the shader program after linking. Set to 0 for error.
     unsigned int id;
     
     /// Construct the shader. Prints error messages if there's a compilation error.
     /// \param vertexPath Path to the vertex shader source file.
     /// \param fragmentPath Path to the fragment shader source file.
-    Shader(const char *vertexPath, const char *fragmentPath);
+    Shader(const std::string& vertexPath, const std::string& fragmentPath);
 
     /// Activates the shader for draw calls.
     void use();
@@ -42,6 +42,9 @@ private:
         Fragment,
         Program
     };
+    
+    std::string vertexPath;
+    std::string fragmentPath;
     /// Performs a check for compile-time errors, printing error messages if needed.
     /// \param shader ID of the shader to check.
     /// \param type Type of the shader program.

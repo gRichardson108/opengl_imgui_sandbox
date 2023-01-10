@@ -17,6 +17,8 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
 #include "Heatmap.h"
+#include "BoidCloud.h"
+#include "MainCamera.h"
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
@@ -36,6 +38,8 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    MainCamera::screen_width = width;
+    MainCamera::screen_height = height;
 }
 
 int main(int, char **) {
@@ -68,7 +72,9 @@ int main(int, char **) {
 #endif
 
     // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    MainCamera::screen_width = 1280;
+    MainCamera::screen_height = 720;
+    GLFWwindow *window = glfwCreateWindow(MainCamera::screen_width, MainCamera::screen_height, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -81,6 +87,9 @@ int main(int, char **) {
         fprintf(stderr, "Failed to initialize OpenGL context\n");
         return 1;
     }
+    // configure global opengl state
+    // -----------------------------
+    glEnable(GL_DEPTH_TEST);
     printGLError();
 
     // Setup Dear ImGui context
@@ -124,6 +133,10 @@ int main(int, char **) {
     Heatmap heatmap(1280, 720);
     heatmap.fillWithNoise();
     printGLError();
+    
+    // boids
+    BoidCloud cloud;
+    BoidCloud::BoidParams boidParams = {1, 1.0f };
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -175,12 +188,21 @@ int main(int, char **) {
                 show_another_window = false;
             ImGui::End();
         }
+        
+        // boid parameters
+        {
+            ImGui::Begin("Boid Parameters");
+            ImGui::SliderFloat("Scale", &boidParams.scale, 0.0f, 1.0f);
+            ImGui::SliderInt("Quantity", &boidParams.quantity, 0, 100);
+            ImGui::End();
+        }
+        cloud.setBoidParameters(boidParams);
 
         // Rendering
         ImGui::Render();
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        heatmap.draw();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        cloud.draw();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
