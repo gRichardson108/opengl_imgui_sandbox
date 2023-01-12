@@ -19,6 +19,8 @@
 #include "Heatmap.h"
 #include "BoidCloud.h"
 #include "MainCamera.h"
+#include "glm/geometric.hpp"
+#include "GameGlobals.h"
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
@@ -40,6 +42,24 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
     MainCamera::screen_width = width;
     MainCamera::screen_height = height;
+}
+
+void processInput(GLFWwindow *window) {
+    float cameraSpeed = 2.5f * GameGlobals::deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        MainCamera::camera_position += cameraSpeed * MainCamera::camera_front;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        MainCamera::camera_position -= cameraSpeed * MainCamera::camera_front;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        MainCamera::camera_position -= cameraSpeed * glm::normalize(glm::cross(MainCamera::camera_front,
+                                                                               MainCamera::camera_up));
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        MainCamera::camera_position += cameraSpeed * glm::normalize(glm::cross(MainCamera::camera_front,
+                                                                               MainCamera::camera_up));
+    }
 }
 
 int main(int, char **) {
@@ -140,13 +160,18 @@ int main(int, char **) {
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
+        GameGlobals::updateDeltaTime();
+        
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-
+        
+        if (!io.WantCaptureKeyboard) {
+            processInput(window);
+        }
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

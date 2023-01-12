@@ -144,7 +144,9 @@ void BoidCloud::draw() {
     const float max_distance = 4.0f;
     for (unsigned int i = 0; i < params.quantity; i++) {
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 view = glm::lookAt(MainCamera::camera_position, 
+                                     MainCamera::camera_position + MainCamera::camera_front, 
+                                     MainCamera::camera_up);
         glm::mat4 projection = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.5f));
         // we're going to make a little spiral shape out of the boxes

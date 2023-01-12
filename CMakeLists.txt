@@ -34,7 +34,7 @@ add_executable(heatmap main.cpp
         ${IMGUI_DIR}/imgui_demo.cpp
         ${IMGUI_DIR}/imgui_tables.cpp
         ${IMGUI_DIR}/imgui_widgets.cpp
-        Shader.cpp Shader.h Heatmap.cpp Heatmap.h BoidCloud.cpp BoidCloud.h MainCamera.h MainCamera.cpp stb_image.cpp)
+        Shader.cpp Shader.h Heatmap.cpp Heatmap.h BoidCloud.cpp BoidCloud.h MainCamera.h MainCamera.cpp stb_image.cpp GameGlobals.cpp GameGlobals.h)
 
 add_dependencies(heatmap copy_resources)
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} glfw glad glm)
