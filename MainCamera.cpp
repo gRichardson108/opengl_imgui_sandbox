@@ -9,4 +9,5 @@ namespace MainCamera {
     glm::vec3 camera_position = glm::vec3(0.f, 0.f, 3.f);
     glm::vec3 camera_front = glm::vec3(0.f, 0.f, -1.f);
     glm::vec3 camera_up = glm::vec3(0.f, 1.f, 0.f);
+    bool mouse_look = false;
 }

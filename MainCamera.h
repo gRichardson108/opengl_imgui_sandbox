@@ -13,6 +13,7 @@ namespace MainCamera {
     extern glm::vec3 camera_position;
     extern glm::vec3 camera_front;
     extern glm::vec3 camera_up;
+    extern bool mouse_look;
 }
 
 #endif //HEATMAP_MAINCAMERA_H

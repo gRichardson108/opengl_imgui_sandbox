@@ -21,6 +21,7 @@
 #include "MainCamera.h"
 #include "glm/geometric.hpp"
 #include "GameGlobals.h"
+#include "glm/trigonometric.hpp"
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
@@ -62,6 +63,61 @@ void processInput(GLFWwindow *window) {
     }
 }
 
+void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            MainCamera::mouse_look = true;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        } else if (action == GLFW_RELEASE) {
+            MainCamera::mouse_look = false;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+}
+
+void mouseMovementCallback(GLFWwindow* window, double xpos, double ypos) {
+    if (!MainCamera::mouse_look) return;
+   
+    // todo: MainCamera should probably implement this instead. It can keep track of the last
+    // position instead, so the look direction doesn't suddenly jump when mouse_look is enabled
+    static bool firstMouse = true;
+    static double lastX;
+    static double lastY;
+    static float pitch = 0.f;
+    static float yaw = -90.f;
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+   
+    // todo: expose mouse sensitivity as menu option
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    
+    yaw += xoffset;
+    pitch += yoffset;
+    
+    if (pitch > 89.f) {
+        pitch = 89.f;
+    }
+    if (pitch < -89.f) {
+        pitch = -89.f;
+    }
+    
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    MainCamera::camera_front = glm::normalize(direction);
+}
+
 int main(int, char **) {
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -94,11 +150,14 @@ int main(int, char **) {
     // Create window with graphics context
     MainCamera::screen_width = 1280;
     MainCamera::screen_height = 720;
-    GLFWwindow *window = glfwCreateWindow(MainCamera::screen_width, MainCamera::screen_height, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(MainCamera::screen_width, MainCamera::screen_height,
+                                          "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetCursorPosCallback(window, mouseMovementCallback);
     glfwSwapInterval(1); // Enable vsync
 
     // setup GLAD
@@ -115,7 +174,8 @@ int main(int, char **) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -153,22 +213,22 @@ int main(int, char **) {
     Heatmap heatmap(1280, 720);
     heatmap.fillWithNoise();
     printGLError();
-    
+
     // boids
     BoidCloud cloud;
-    BoidCloud::BoidParams boidParams = {1, 1.0f };
+    BoidCloud::BoidParams boidParams = {1, 1.0f};
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         GameGlobals::updateDeltaTime();
-        
+
         // Poll and handle events (inputs, window resize, etc.)
         // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
-        
+
         if (!io.WantCaptureKeyboard) {
             processInput(window);
         }
@@ -186,34 +246,38 @@ int main(int, char **) {
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin(
+                    "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Text(
+                    "This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            if (ImGui::Button(
+                    "Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
                 counter++;
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                        ImGui::GetIO().Framerate);
             ImGui::End();
         }
 
         // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        if (show_another_window) {
+            ImGui::Begin("Another Window",
+                         &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
             if (ImGui::Button("Close Me"))
                 show_another_window = false;
             ImGui::End();
         }
-        
+
         // boid parameters
         {
             ImGui::Begin("Boid Parameters");
@@ -225,7 +289,8 @@ int main(int, char **) {
 
         // Rendering
         ImGui::Render();
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
+                     clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cloud.draw();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
