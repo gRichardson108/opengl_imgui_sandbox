@@ -22,6 +22,7 @@
 #include "glm/geometric.hpp"
 #include "GameGlobals.h"
 #include "glm/trigonometric.hpp"
+#include "ModelLoading.h"
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
@@ -66,56 +67,18 @@ void processInput(GLFWwindow *window) {
 void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (action == GLFW_PRESS) {
-            MainCamera::mouse_look = true;
+            MainCamera::mouse_info.mouse_look = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         } else if (action == GLFW_RELEASE) {
-            MainCamera::mouse_look = false;
+            MainCamera::mouse_info.mouse_look = false;
+            MainCamera::first_mouse = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }
 }
 
-void mouseMovementCallback(GLFWwindow* window, double xpos, double ypos) {
-    if (!MainCamera::mouse_look) return;
-   
-    // todo: MainCamera should probably implement this instead. It can keep track of the last
-    // position instead, so the look direction doesn't suddenly jump when mouse_look is enabled
-    static bool firstMouse = true;
-    static double lastX;
-    static double lastY;
-    static float pitch = 0.f;
-    static float yaw = -90.f;
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-    
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
-   
-    // todo: expose mouse sensitivity as menu option
-    float sensitivity = 0.1f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-    
-    yaw += xoffset;
-    pitch += yoffset;
-    
-    if (pitch > 89.f) {
-        pitch = 89.f;
-    }
-    if (pitch < -89.f) {
-        pitch = -89.f;
-    }
-    
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    MainCamera::camera_front = glm::normalize(direction);
+void mouseMovementCallback(GLFWwindow *window, double xpos, double ypos) {
+    MainCamera::handleMouseMovement(xpos, ypos);
 }
 
 int main(int, char **) {
@@ -216,7 +179,7 @@ int main(int, char **) {
 
     // boids
     BoidCloud cloud;
-    BoidCloud::BoidParams boidParams = {1, 1.0f};
+    BoidCloud::BoidParams boidParams = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -292,6 +255,7 @@ int main(int, char **) {
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
                      clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        cloud.update();
         cloud.draw();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
