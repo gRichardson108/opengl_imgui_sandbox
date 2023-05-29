@@ -11,7 +11,7 @@ namespace GameGlobals {
     extern float deltaTime;
     /// Time of last frame.
     extern float lastFrame;
-   
+
     /// Updates the delta time based on the current time.
     /// This should only really be called in one place in the main loop.
     void updateDeltaTime();

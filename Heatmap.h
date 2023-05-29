@@ -10,12 +10,16 @@
 class Heatmap {
 public:
     Heatmap(int width, int height);
+
     ~Heatmap();
+
     void fillWithNoise();
+
     void draw();
+
 private:
     void updateTexture();
-    
+
     /// GL_RGB8 data
     void *data;
     int width;

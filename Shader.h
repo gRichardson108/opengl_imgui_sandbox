@@ -6,6 +6,7 @@
 #define HEATMAP_SHADER_H
 
 #include <string>
+#include <glm/mat4x4.hpp>
 
 /// Handles shader compilation in a very basic way, with error messages.
 class Shader {
@@ -36,6 +37,7 @@ public:
     /// \param value Value to set.
     void setFloat(const std::string &name, float value) const;
 
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
 private:
     enum class ShaderType {
         Vertex,

@@ -23,6 +23,8 @@
 #include "GameGlobals.h"
 #include "glm/trigonometric.hpp"
 #include "ModelLoading.h"
+#include <glm/mat4x4.hpp>
+#include "stb_image.h"
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
@@ -81,7 +83,39 @@ void mouseMovementCallback(GLFWwindow *window, double xpos, double ypos) {
     MainCamera::handleMouseMovement(xpos, ypos);
 }
 
+void GLAPIENTRY OpenGlDebugMessageCallback(GLenum source,
+                                           GLenum type,
+                                           GLuint id,
+                                           GLenum severity,
+                                           GLsizei length,
+                                           const GLchar* message,
+                                           const void* userParam) {
+    const char* severity_str;
+    
+    
+#define ENUM_TO_STR_CASE(sym, name) \
+    case (name):                 \
+        (sym) = #name;  \
+        break;
+    
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+    
+    switch (severity) {
+        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_LOW)
+        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_MEDIUM)
+        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_HIGH)
+        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_NOTIFICATION)
+        default:
+            severity_str = "Unknown";
+            break;
+    }
+    fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = %s, message = %s\n",
+             ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+             type, severity_str, message );
+}
+
 int main(int, char **) {
+    stbi_set_flip_vertically_on_load(true);
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -104,7 +138,7 @@ int main(int, char **) {
 #else
     // GL 3.0 + GLSL 130
     const char *glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
@@ -129,6 +163,7 @@ int main(int, char **) {
         fprintf(stderr, "Failed to initialize OpenGL context\n");
         return 1;
     }
+    
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
@@ -177,10 +212,16 @@ int main(int, char **) {
     heatmap.fillWithNoise();
     printGLError();
 
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(OpenGlDebugMessageCallback, 0);
     // boids
     BoidCloud cloud;
     BoidCloud::BoidParams boidParams = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
 
+    Model model = loadModel(std::string("E:/SoftwareDevelopment/imgui-projects/heatmap/resources/backpack/backpack.obj"));
+    Shader shader("resources/1.model_loading.vsh.glsl", "resources/1.model_loading.fsh.glsl");
+    
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         GameGlobals::updateDeltaTime();
@@ -257,6 +298,8 @@ int main(int, char **) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cloud.update();
         cloud.draw();
+        
+        draw(&model, &shader);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);

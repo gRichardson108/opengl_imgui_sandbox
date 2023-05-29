@@ -26,6 +26,7 @@ enum TextureType {
 struct Texture {
     unsigned int id;
     TextureType textureType;
+    std::string path;
 };
 
 struct Mesh {
@@ -44,18 +45,30 @@ void draw(const Mesh *mesh, const Shader *shader);
 struct Model {
     std::vector<Mesh> meshes;
     std::string directory;
+    std::vector<Texture> textures_loaded;
 };
 
-Model loadModel(const std::string *path);
+Model loadModel(const std::string &path);
 
 // forward declaration for assimp
 struct aiNode;
 struct aiScene;
 struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
 
 void processNode(Model *model, aiNode *node, const aiScene *scene);
-Mesh processMesh(const aiMesh* mesh, const aiScene* scene);
+Mesh processMesh(Model* model, const aiMesh* mesh, const aiScene* scene);
 
 void draw(const Model *model, const Shader *shader);
+
+std::vector<Texture> loadMaterialTextures(Model* model, aiMaterial *mat, aiTextureType type, TextureType textureType);
+
+/// Uploads a texture using some default wrapping / mipmap behavior.
+/// \param path Path to the filename, relative to the directory.
+/// \param directory Root directory containing the file.
+/// \param gamma Unused.
+/// \return texture ID
+unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma=false);
 
 #endif //HEATMAP_MODELLOADING_H
