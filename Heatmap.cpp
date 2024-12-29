@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <cstring>
 #include "Heatmap.h"
 #include <glad/gl.h>
 #include <glm/vec2.hpp>

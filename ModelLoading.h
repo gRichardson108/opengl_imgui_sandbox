@@ -11,6 +11,7 @@
 #include "glm/vec2.hpp"
 
 #include "Shader.h"
+#include "assimp/material.h"
 
 struct Vertex {
     glm::vec3 position;
