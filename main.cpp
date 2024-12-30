@@ -219,7 +219,7 @@ int main(int, char **) {
     BoidCloud cloud;
     BoidCloud::BoidParams boidParams = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
 
-    Model model = loadModel(std::string("E:/SoftwareDevelopment/imgui-projects/heatmap/resources/backpack/backpack.obj"));
+    Model model = loadModel(std::string("resources/fish/fish.obj"));
     Shader shader("resources/1.model_loading.vsh.glsl", "resources/1.model_loading.fsh.glsl");
     
     // Main loop
