@@ -154,13 +154,14 @@ void BoidCloud::setBoidParameters(const BoidCloud::BoidParams &params) {
         std::uniform_real_distribution<float> distribution_x(0.0, params.boundingVolume.x);
         std::uniform_real_distribution<float> distribution_y(0.0, params.boundingVolume.y);
         std::uniform_real_distribution<float> distribution_z(0.0, params.boundingVolume.z);
+        std::uniform_real_distribution<float> distribution_speed(params.minimumSpeed, params.maximumSpeed);
         boids.push_back(Boid{
                 .position = glm::vec3(
                     distribution_x(random_generator),
                     distribution_y(random_generator),
                     distribution_z(random_generator)),
                 .direction = glm::vec3(1.f, 0.f, 0.0),
-                .speed = 0.05f
+                .speed = distribution_speed(random_generator)
         });
     }
     while (boids.size() > params.quantity) {

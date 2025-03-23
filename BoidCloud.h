@@ -21,6 +21,8 @@ public:
         int quantity;
         float scale;
         glm::vec3 boundingVolume;
+        float minimumSpeed;
+        float maximumSpeed;
     };
 
     void setBoidParameters(const BoidParams &params);

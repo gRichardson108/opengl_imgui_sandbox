@@ -239,8 +239,8 @@ int main(int, char**)
     glDebugMessageCallback(OpenGlDebugMessageCallback, 0);
     // boids
     BoidCloud cloud;
-    const BoidCloud::BoidParams BOID_PARAMS_DEFAULT = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
-    BoidCloud::BoidParams boidParams = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
+    const BoidCloud::BoidParams BOID_PARAMS_DEFAULT = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f), 0.02f, 0.06f};
+    BoidCloud::BoidParams boidParams = BOID_PARAMS_DEFAULT;
     cloud.setBoidParameters(boidParams);
 
     Model model = loadModel(std::string("resources/fish/fish.obj"));
@@ -274,8 +274,11 @@ int main(int, char**)
         // boid parameters
         {
             ImGui::Begin("Boid Parameters");
-            bool didChange = ImGui::SliderFloat("Scale", &boidParams.scale, 0.0f, 1.0f) ||
-                             ImGui::SliderInt("Quantity", &boidParams.quantity, 0, 100);
+            bool didChange = ImGui::SliderFloat("Scale", &boidParams.scale, 0.0f, 1.0f);
+            didChange |=     ImGui::SliderInt("Quantity", &boidParams.quantity, 0, 100);
+            didChange |=     ImGui::SliderFloat("Minimum Speed", &boidParams.minimumSpeed, 0.0f, 0.4f);
+            didChange |=     ImGui::SliderFloat("Maximum Speed", &boidParams.maximumSpeed, 0.0f, 0.4f);
+            didChange |=     ImGui::SliderFloat3("Bounding Volume", &boidParams.boundingVolume[0], 0.0f, 1000.0f);
             if (ImGui::Button("Reset"))
             {
                 didChange = true;
