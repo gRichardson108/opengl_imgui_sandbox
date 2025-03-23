@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include <random>
+
 #include "BoidCloud.h"
 #include "MainCamera.h"
 #include "GLFW/glfw3.h"
@@ -13,6 +15,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define GL_CHECK      do { GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned \n", __FILE__, __LINE__, gl_err); } while (0)  // Just error check
+
+std::random_device rd;
+std::mt19937 random_generator(rd());
 
 BoidCloud::BoidCloud() :
         shader("resources/texturedMesh.vsh.glsl", "resources/texturedMesh.fsh.glsl") {
@@ -146,9 +151,14 @@ BoidCloud::~BoidCloud() {
 void BoidCloud::setBoidParameters(const BoidCloud::BoidParams &params) {
     this->params = params;
     while (params.quantity > boids.size()) {
-        // todo: randomize initial position and direction
+        std::uniform_real_distribution<float> distribution_x(0.0, params.boundingVolume.x);
+        std::uniform_real_distribution<float> distribution_y(0.0, params.boundingVolume.y);
+        std::uniform_real_distribution<float> distribution_z(0.0, params.boundingVolume.z);
         boids.push_back(Boid{
-                .position = glm::vec3(10.0, 0.0f, -10.f),
+                .position = glm::vec3(
+                    distribution_x(random_generator),
+                    distribution_y(random_generator),
+                    distribution_z(random_generator)),
                 .direction = glm::vec3(1.f, 0.f, 0.0),
                 .speed = 0.05f
         });

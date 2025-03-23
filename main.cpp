@@ -28,50 +28,64 @@
 
 #define GL_CALL(_CALL)      do { _CALL; GLenum gl_err = glGetError(); if (gl_err != 0) fprintf(stderr, "%s:%d GL error 0x%x returned from '%s'.\n", __FILE__, __LINE__, gl_err, #_CALL); } while (0)  // Call with error check
 
-static void printGLError() {
+
+static void printGLError()
+{
     GLenum gl_err = glGetError();
     if (gl_err != 0)
         fprintf(stderr, "%s:%d GL error 0x%x \n", __FILE__, __LINE__, gl_err);
 }
 
-static void glfw_error_callback(int error, const char *description) {
+static void glfw_error_callback(int error, const char* description)
+{
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
     MainCamera::screen_width = width;
     MainCamera::screen_height = height;
 }
 
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow* window)
+{
     float cameraSpeed = 2.5f * GameGlobals::deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
         MainCamera::camera_position += cameraSpeed * MainCamera::camera_front;
     }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
         MainCamera::camera_position -= cameraSpeed * MainCamera::camera_front;
     }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
         MainCamera::camera_position -= cameraSpeed * glm::normalize(glm::cross(MainCamera::camera_front,
                                                                                MainCamera::camera_up));
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
         MainCamera::camera_position += cameraSpeed * glm::normalize(glm::cross(MainCamera::camera_front,
                                                                                MainCamera::camera_up));
     }
 }
 
-void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        if (action == GLFW_PRESS) {
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_PRESS)
+        {
             MainCamera::mouse_info.mouse_look = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        } else if (action == GLFW_RELEASE) {
+        }
+        else if (action == GLFW_RELEASE)
+        {
             MainCamera::mouse_info.mouse_look = false;
             MainCamera::first_mouse = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -79,7 +93,8 @@ void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
-void mouseMovementCallback(GLFWwindow *window, double xpos, double ypos) {
+void mouseMovementCallback(GLFWwindow* window, double xpos, double ypos)
+{
     MainCamera::handleMouseMovement(xpos, ypos);
 }
 
@@ -89,32 +104,35 @@ void GLAPIENTRY OpenGlDebugMessageCallback(GLenum source,
                                            GLenum severity,
                                            GLsizei length,
                                            const GLchar* message,
-                                           const void* userParam) {
+                                           const void* userParam)
+{
     const char* severity_str;
-    
-    
+
+
 #define ENUM_TO_STR_CASE(sym, name) \
     case (name):                 \
         (sym) = #name;  \
         break;
-    
+
     if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
-    
-    switch (severity) {
-        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_LOW)
-        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_MEDIUM)
-        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_HIGH)
-        ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_NOTIFICATION)
-        default:
-            severity_str = "Unknown";
-            break;
+
+    switch (severity)
+    {
+    ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_LOW)
+    ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_MEDIUM)
+    ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_HIGH)
+    ENUM_TO_STR_CASE(severity_str, GL_DEBUG_SEVERITY_NOTIFICATION)
+    default:
+        severity_str = "Unknown";
+        break;
     }
-    fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = %s, message = %s\n",
-             ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-             type, severity_str, message );
+    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = %s, message = %s\n",
+            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+            type, severity_str, message);
 }
 
-int main(int, char **) {
+int main(int, char**)
+{
     stbi_set_flip_vertically_on_load(true);
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -137,17 +155,17 @@ int main(int, char **) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    const char *glsl_version = "#version 130";
+    const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
     // Create window with graphics context
     MainCamera::screen_width = 1280;
     MainCamera::screen_height = 720;
-    GLFWwindow *window = glfwCreateWindow(MainCamera::screen_width, MainCamera::screen_height,
+    GLFWwindow* window = glfwCreateWindow(MainCamera::screen_width, MainCamera::screen_height,
                                           "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
     if (window == NULL)
         return 1;
@@ -159,11 +177,12 @@ int main(int, char **) {
 
     // setup GLAD
     int version = gladLoadGL(glfwGetProcAddress);
-    if (version == 0) {
+    if (version == 0)
+    {
         fprintf(stderr, "Failed to initialize OpenGL context\n");
         return 1;
     }
-    
+
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
@@ -172,8 +191,8 @@ int main(int, char **) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void) io;
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -202,8 +221,11 @@ int main(int, char **) {
     //IM_ASSERT(font != NULL);
 
     // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
+    struct
+    {
+        bool show_demo_window = false;
+        bool show_another_window = false;
+    } imgui_demo_windows;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // heatmap
@@ -217,13 +239,16 @@ int main(int, char **) {
     glDebugMessageCallback(OpenGlDebugMessageCallback, 0);
     // boids
     BoidCloud cloud;
+    const BoidCloud::BoidParams BOID_PARAMS_DEFAULT = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
     BoidCloud::BoidParams boidParams = {1, 1.0f, glm::vec3(20.f, 20.f, 20.f)};
+    cloud.setBoidParameters(boidParams);
 
     Model model = loadModel(std::string("resources/fish/fish.obj"));
     Shader shader("resources/1.model_loading.vsh.glsl", "resources/1.model_loading.fsh.glsl");
-    
+
     // Main loop
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         GameGlobals::updateDeltaTime();
 
         // Poll and handle events (inputs, window resize, etc.)
@@ -233,7 +258,8 @@ int main(int, char **) {
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
 
-        if (!io.WantCaptureKeyboard) {
+        if (!io.WantCaptureKeyboard)
+        {
             processInput(window);
         }
         // Start the Dear ImGui frame
@@ -242,54 +268,25 @@ int main(int, char **) {
         ImGui::NewFrame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin(
-                    "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text(
-                    "This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button(
-                    "Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                        ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window) {
-            ImGui::Begin("Another Window",
-                         &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+        if (imgui_demo_windows.show_demo_window)
+            ImGui::ShowDemoWindow(&imgui_demo_windows.show_demo_window);
 
         // boid parameters
         {
             ImGui::Begin("Boid Parameters");
-            ImGui::SliderFloat("Scale", &boidParams.scale, 0.0f, 1.0f);
-            ImGui::SliderInt("Quantity", &boidParams.quantity, 0, 100);
+            bool didChange = ImGui::SliderFloat("Scale", &boidParams.scale, 0.0f, 1.0f) ||
+                             ImGui::SliderInt("Quantity", &boidParams.quantity, 0, 100);
+            if (ImGui::Button("Reset"))
+            {
+                didChange = true;
+                boidParams = BOID_PARAMS_DEFAULT;
+            }
+            if (didChange)
+            {
+                cloud.setBoidParameters(boidParams);
+            }
             ImGui::End();
         }
-        cloud.setBoidParameters(boidParams);
 
         // Rendering
         ImGui::Render();
@@ -298,7 +295,7 @@ int main(int, char **) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         cloud.update();
         cloud.draw();
-        
+
         draw(&model, &shader);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
